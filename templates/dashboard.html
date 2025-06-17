@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - WhatsApp Ticket System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt"></i> Ticket Dashboard</h2>
+    <div class="btn-group" role="group">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary {% if not filter_status %}active{% endif %}">
+            All Tickets
+        </a>
+        <a href="{{ url_for('dashboard') }}?filter=open" class="btn btn-outline-success {% if filter_status == 'open' %}active{% endif %}">
+            Open ({{ stats.open }})
+        </a>
+        <a href="{{ url_for('dashboard') }}?filter=closed" class="btn btn-outline-secondary {% if filter_status == 'closed' %}active{% endif %}">
+            Closed ({{ stats.closed }})
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-white bg-primary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.total }}</h4>
+                        <p class="mb-0">Total Tickets</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-ticket-alt fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-success">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.open }}</h4>
+                        <p class="mb-0">Open Tickets</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-folder-open fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-secondary">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.closed }}</h4>
+                        <p class="mb-0">Closed Tickets</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-folder fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-white bg-info">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4>{{ stats.today }}</h4>
+                        <p class="mb-0">Today's Tickets</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-calendar-day fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tickets Table -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">
+            <i class="fas fa-list"></i> 
+            {% if filter_status %}
+                {{ filter_status.title() }} Tickets
+            {% else %}
+                All Tickets
+            {% endif %}
+        </h5>
+    </div>
+    <div class="card-body p-0">
+        {% if tickets %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Customer</th>
+                        <th>Status</th>
+                        <th>Messages</th>
+                        <th>Last Message</th>
+                        <th>Created</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for ticket in tickets %}
+                    <tr class="ticket-row" onclick="window.location.href='{{ url_for('ticket_detail', ticket_id=ticket.id) }}'">
+                        <td>
+                            <strong>{{ ticket.id }}</strong>
+                        </td>
+                        <td>
+                            <div>
+                                <strong>{{ ticket.sender_name }}</strong>
+                                <br>
+                                <small class="text-muted">{{ ticket.sender_id.split('@')[0] }}</small>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge {% if ticket.status == 'open' %}bg-success{% else %}bg-secondary{% endif %}">
+                                <i class="fas {% if ticket.status == 'open' %}fa-folder-open{% else %}fa-folder{% endif %}"></i>
+                                {{ ticket.status.title() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ ticket.message_count }}</span>
+                            {% if ticket.has_voice %}
+                                <i class="fas fa-microphone text-success ms-1" title="Has voice messages"></i>
+                            {% endif %}
+                            {% if ticket.has_media %}
+                                <i class="fas fa-paperclip text-primary ms-1" title="Has media files"></i>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="text-truncate" style="max-width: 200px;">
+                                {{ ticket.last_message }}
+                            </div>
+                            <small class="text-muted">{{ ticket.last_message_time }}</small>
+                        </td>
+                        <td>
+                            <small>{{ ticket.created_at_formatted }}</small>
+                        </td>
+                        <td>
+                            <a href="{{ url_for('ticket_detail', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation()">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            {% if ticket.status == 'open' %}
+                            <button class="btn btn-sm btn-outline-danger ms-1" onclick="event.stopPropagation(); closeTicket('{{ ticket.id }}')" title="Close Ticket">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center p-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">No tickets found</h5>
+            <p class="text-muted">
+                {% if filter_status %}
+                    No {{ filter_status }} tickets at the moment.
+                {% else %}
+                    No tickets have been created yet.
+                {% endif %}
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function closeTicket(ticketId) {
+    if (confirm('Are you sure you want to close ticket ' + ticketId + '?')) {
+        fetch('/close_ticket/' + ticketId, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert('Error closing ticket: ' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('Error: ' + error);
+        });
+    }
+}
+
+// Make table rows clickable
+document.querySelectorAll('.ticket-row').forEach(row => {
+    row.style.cursor = 'pointer';
+});
+</script>
+{% endblock %}
