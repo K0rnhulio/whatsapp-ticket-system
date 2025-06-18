@@ -189,6 +189,26 @@
                 </dl>
             </div>
         </div>
+        
+        <!-- Admin Notes Section -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-sticky-note"></i> Internal Notes</h6>
+                <small class="text-muted">Admin only - not visible to customer</small>
+            </div>
+            <div class="card-body">
+                <form id="notes-form" onsubmit="saveNotes(event)">
+                    <div class="mb-3">
+                        <textarea class="form-control" id="admin-notes" rows="4" 
+                                  placeholder="Add internal notes about this ticket (only visible to agents)...">{{ ticket.admin_notes or '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-save"></i> Save Notes
+                    </button>
+                </form>
+                <div id="notes-status" class="mt-2"></div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -245,6 +265,37 @@ function closeTicket(ticketId) {
             alert('Error: ' + error);
         });
     }
+}
+
+function saveNotes(event) {
+    event.preventDefault();
+    const notes = document.getElementById('admin-notes').value;
+    const statusDiv = document.getElementById('notes-status');
+    
+    statusDiv.innerHTML = '<small class="text-info"><i class="fas fa-spinner fa-spin"></i> Saving notes...</small>';
+
+    fetch(`/save_notes/{{ ticket.id }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ notes: notes })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            statusDiv.innerHTML = '<small class="text-success"><i class="fas fa-check"></i> Notes saved successfully</small>';
+            setTimeout(() => {
+                statusDiv.innerHTML = '';
+            }, 3000);
+        } else {
+            statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Error: ' + data.message + '</small>';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        statusDiv.innerHTML = '<small class="text-danger"><i class="fas fa-exclamation-triangle"></i> Failed to save notes</small>';
+    });
 }
 
 // Ctrl+Enter to send

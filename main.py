@@ -68,7 +68,8 @@ def save_ticket_to_db(ticket_data):
             'sender_id': ticket_data['sender_id'],
             'sender_name': ticket_data['sender_name'],
             'status': ticket_data['status'],
-            'created_at': ticket_data['created_at']
+            'created_at': ticket_data['created_at'],
+            'admin_notes': ticket_data.get('admin_notes', '')
         }
         
         # Upsert ticket (insert or update if exists)
@@ -123,6 +124,7 @@ def load_tickets_from_db():
                 'sender_name': ticket_row['sender_name'],
                 'status': ticket_row['status'],
                 'created_at': ticket_row['created_at'],
+                'admin_notes': ticket_row.get('admin_notes', ''),
                 'messages': []
             }
             
@@ -411,6 +413,7 @@ def webhook():
                         'sender_name': sender_name,
                         'status': 'open',
                         'created_at': datetime.now().isoformat(),
+                        'admin_notes': "",
                         'messages': [text_message]
                     }
                     logger.info(f"Created new ticket {ticket_id} for sender {sender}.")
@@ -437,6 +440,7 @@ def webhook():
                             'sender_name': sender_name,
                             'status': 'open',
                             'created_at': datetime.now().isoformat(),
+                            'admin_notes': "",
                             'messages': [voice_message]
                         }
                         logger.info(f"Created new ticket {ticket_id} for sender {sender}.")
@@ -464,6 +468,7 @@ def webhook():
                             'sender_name': sender_name,
                             'status': 'open',
                             'created_at': datetime.now().isoformat(),
+                            'admin_notes': "",
                             'messages': [media_message]
                         }
                         logger.info(f"Created new ticket {ticket_id} for sender {sender}.")
@@ -644,6 +649,7 @@ def ticket_detail(ticket_id):
         'sender_name': ticket_data['sender_name'],
         'status': ticket_data['status'],
         'created_at_formatted': datetime.fromisoformat(ticket_data['created_at'].replace('Z', '+00:00')).strftime('%Y-%m-%d %H:%M'),
+        'admin_notes': ticket_data.get('admin_notes', ''),
         'messages': []
     }
     
@@ -707,6 +713,9 @@ def send_file(ticket_id):
             return jsonify({'success': False, 'message': 'Ticket not found'})
         
         ticket = tickets[ticket_id]
+        if ticket['status'] == 'closed':
+            return jsonify({'success': False, 'message': 'Ticket is closed'})
+        
         chat_id = ticket['sender_id']
         
         # Save uploaded file temporarily
@@ -715,32 +724,21 @@ def send_file(ticket_id):
         temp_file_path = os.path.join(temp_dir, filename)
         file.save(temp_file_path)
         
-        # Check if it's an audio file that needs conversion
-        file_ext = filename.lower().split('.')[-1] if '.' in filename else ''
-        is_audio = file_ext in ['webm', 'ogg', 'wav', 'm4a', 'aac']
-        
+        # Check if it's an audio file and convert to MP3 if needed
         final_file_path = temp_file_path
         final_filename = filename
         
-        # Convert audio files to MP3 for better WhatsApp compatibility
-        if is_audio and file_ext != 'mp3':
-            mp3_filename = f"{os.path.splitext(filename)[0]}.mp3"
+        if file.content_type and file.content_type.startswith('audio/'):
+            # Convert audio to MP3 for better WhatsApp compatibility
+            mp3_filename = os.path.splitext(filename)[0] + '.mp3'
             mp3_file_path = os.path.join(temp_dir, mp3_filename)
             
-            logger.info(f"Converting audio file {filename} to MP3 for WhatsApp compatibility")
             if convert_audio_to_mp3(temp_file_path, mp3_file_path):
-                # Use converted file
                 final_file_path = mp3_file_path
                 final_filename = mp3_filename
-                logger.info(f"Audio conversion successful: {filename} -> {mp3_filename}")
-                
-                # Clean up original file
-                try:
-                    os.remove(temp_file_path)
-                except:
-                    pass
+                logger.info(f"Audio file converted to MP3: {filename} -> {mp3_filename}")
             else:
-                logger.warning(f"Audio conversion failed, sending original file: {filename}")
+                logger.warning(f"Audio conversion failed, using original file: {filename}")
         
         # Send file via WhatsApp
         result = send_whatsapp_file(chat_id, final_file_path, final_filename, caption, ticket_id)
@@ -759,6 +757,28 @@ def send_file(ticket_id):
     except Exception as e:
         logger.error(f"Error in send_file route: {e}")
         return jsonify({'success': False, 'message': f'Server error: {str(e)}'})
+
+@app.route('/save_notes/<ticket_id>', methods=['POST'])
+def save_notes(ticket_id):
+    """Save admin notes for a ticket."""
+    if ticket_id not in tickets:
+        return jsonify({'success': False, 'message': 'Ticket not found'})
+    
+    data = request.get_json()
+    notes = data.get('notes', '').strip()
+    
+    try:
+        # Update ticket with admin notes
+        tickets[ticket_id]['admin_notes'] = notes
+        
+        # Save to database
+        save_ticket_to_db(tickets[ticket_id])
+        
+        logger.info(f"Admin notes updated for ticket {ticket_id}")
+        return jsonify({'success': True, 'message': 'Notes saved successfully'})
+    except Exception as e:
+        logger.error(f"Error saving notes for ticket {ticket_id}: {e}")
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/close_ticket/<ticket_id>', methods=['POST'])
 def close_ticket_web(ticket_id):
