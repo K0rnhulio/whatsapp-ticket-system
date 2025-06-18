@@ -594,7 +594,10 @@ def dashboard():
     
     # Filter tickets
     filtered_tickets = []
-    for ticket_id, ticket_data in sorted(tickets.items(), key=lambda x: x[1]['created_at'], reverse=True):
+    # Sort tickets by ticket number (T1, T2, T3, etc.) - extract number and sort numerically
+    sorted_ticket_items = sorted(tickets.items(), key=lambda x: int(x[0][1:]) if x[0].startswith('T') else 0, reverse=True)
+    
+    for ticket_id, ticket_data in sorted_ticket_items:
         if filter_status and ticket_data['status'] != filter_status:
             continue
             
