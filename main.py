@@ -347,12 +347,19 @@ def webhook():
 
     try:
         if webhook_type == 'incomingMessageReceived':
-            sender_data = data.get('senderData', {})
-            sender = sender_data.get('sender')
-            sender_name = sender_data.get('senderName') or sender_data.get('chatName')
-
             message_data = data.get('messageData', {})
             message_type = message_data.get('typeMessage')
+            
+            # Extract sender information from messageData
+            sender = message_data.get('chatId')
+            sender_name = message_data.get('senderName', 'Unknown')
+            
+            # Fallback to senderData if available (for compatibility)
+            sender_data = data.get('senderData', {})
+            if not sender:
+                sender = sender_data.get('sender')
+            if sender_name == 'Unknown':
+                sender_name = sender_data.get('senderName') or sender_data.get('chatName') or 'Unknown'
             
             global next_ticket_id
 
@@ -876,8 +883,14 @@ def terminal_input_thread():
 
 # --- Main Execution ---
 if __name__ == '__main__':
-    input_thread = threading.Thread(target=terminal_input_thread)
-    input_thread.daemon = True
-    input_thread.start()
-
-    app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
+    # Only start terminal interface in development mode
+    if os.getenv('FLASK_ENV') == 'development':
+        input_thread = threading.Thread(target=terminal_input_thread)
+        input_thread.daemon = True
+        input_thread.start()
+        
+        app.run(debug=True, use_reloader=False, host='0.0.0.0', port=5000)
+    else:
+        # Production mode - no terminal interface, just run the app
+        port = int(os.environ.get('PORT', 5000))
+        app.run(host='0.0.0.0', port=port, debug=False)
