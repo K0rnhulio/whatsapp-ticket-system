@@ -11,6 +11,48 @@
             min-height: 100vh;
             background: #f8f9fa;
             border-right: 1px solid #dee2e6;
+            transition: all 0.3s ease;
+        }
+        
+        /* Mobile Responsive Sidebar */
+        @media (max-width: 767.98px) {
+            .sidebar {
+                position: fixed;
+                top: 0;
+                left: -100%;
+                width: 280px;
+                z-index: 1050;
+                transition: left 0.3s ease;
+            }
+            .sidebar.show {
+                left: 0;
+            }
+            .sidebar-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 1040;
+                display: none;
+            }
+            .sidebar-overlay.show {
+                display: block;
+            }
+            .main-content {
+                margin-left: 0 !important;
+                width: 100% !important;
+            }
+            .mobile-header {
+                display: block !important;
+            }
+        }
+        
+        @media (min-width: 768px) {
+            .mobile-header {
+                display: none !important;
+            }
         }
         .ticket-card {
             transition: all 0.2s;
@@ -53,10 +95,25 @@
     </style>
 </head>
 <body>
+    <!-- Mobile Header -->
+    <div class="mobile-header d-none bg-primary text-white p-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">
+                <i class="fas fa-headset"></i> Ticket System
+            </h6>
+            <button class="btn btn-outline-light btn-sm" id="sidebarToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </div>
+    
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-md-2 sidebar p-3">
+            <nav class="col-md-2 sidebar p-3" id="sidebar">
                 <h5 class="mb-4">
                     <i class="fas fa-headset"></i> Ticket System
                 </h5>
@@ -80,7 +137,7 @@
             </nav>
 
             <!-- Main content -->
-            <main class="col-md-10 p-4">
+            <main class="col-md-10 p-4 main-content">
                 {% block content %}{% endblock %}
             </main>
         </div>
@@ -88,6 +145,27 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // Mobile sidebar toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            if (sidebarToggle) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('show');
+                    sidebarOverlay.classList.toggle('show');
+                });
+            }
+            
+            if (sidebarOverlay) {
+                sidebarOverlay.addEventListener('click', function() {
+                    sidebar.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                });
+            }
+        });
+        
         // Auto-refresh every 30 seconds
         setTimeout(function() {
             window.location.reload();

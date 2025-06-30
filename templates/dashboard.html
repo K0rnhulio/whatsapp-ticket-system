@@ -3,22 +3,23 @@
 {% block title %}Dashboard - WhatsApp Ticket System{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h2><i class="fas fa-tachometer-alt"></i> Ticket Dashboard</h2>
-    <div class="d-flex gap-3">
-        <a href="{{ url_for('refresh_tickets') }}" class="btn btn-outline-info">
-            <i class="fas fa-sync-alt"></i> Refresh Data
+<!-- Mobile-responsive header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+    <h2 class="mb-0"><i class="fas fa-tachometer-alt"></i> <span class="d-none d-sm-inline">Ticket </span>Dashboard</h2>
+    <div class="d-flex flex-column flex-sm-row gap-2 w-100 w-md-auto">
+        <a href="{{ url_for('refresh_tickets') }}" class="btn btn-outline-info btn-sm">
+            <i class="fas fa-sync-alt"></i> <span class="d-none d-sm-inline">Refresh </span>Data
         </a>
-        <div class="btn-group" role="group">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary {% if not filter_status %}active{% endif %}">
-            All Tickets
-        </a>
-        <a href="{{ url_for('dashboard') }}?filter=open" class="btn btn-outline-success {% if filter_status == 'open' %}active{% endif %}">
-            Open ({{ stats.open }})
-        </a>
-        <a href="{{ url_for('dashboard') }}?filter=closed" class="btn btn-outline-secondary {% if filter_status == 'closed' %}active{% endif %}">
-            Closed ({{ stats.closed }})
-        </a>
+        <div class="btn-group btn-group-sm" role="group">
+            <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary {% if not filter_status %}active{% endif %}">
+                <i class="fas fa-list d-sm-none"></i><span class="d-none d-sm-inline">All Tickets</span><span class="d-sm-none">All</span>
+            </a>
+            <a href="{{ url_for('dashboard') }}?filter=open" class="btn btn-outline-success {% if filter_status == 'open' %}active{% endif %}">
+                <i class="fas fa-folder-open d-sm-none"></i><span class="d-none d-sm-inline">Open ({{ stats.open }})</span><span class="d-sm-none">{{ stats.open }}</span>
+            </a>
+            <a href="{{ url_for('dashboard') }}?filter=closed" class="btn btn-outline-secondary {% if filter_status == 'closed' %}active{% endif %}">
+                <i class="fas fa-folder d-sm-none"></i><span class="d-none d-sm-inline">Closed ({{ stats.closed }})</span><span class="d-sm-none">{{ stats.closed }}</span>
+            </a>
         </div>
     </div>
 </div>
@@ -37,63 +38,63 @@
 </div>
 {% endif %}
 
-<!-- Stats Cards -->
-<div class="row mb-4">
-    <div class="col-md-3">
-        <div class="card text-white bg-primary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
+<!-- Mobile-responsive Stats Cards -->
+<div class="row mb-4 g-3">
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-primary h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h4>{{ stats.total }}</h4>
-                        <p class="mb-0">Total Tickets</p>
+                        <h5 class="mb-1">{{ stats.total }}</h5>
+                        <p class="mb-0 small">Total</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-ticket-alt fa-2x"></i>
+                    <div>
+                        <i class="fas fa-ticket-alt fa-lg"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-success">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-success h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h4>{{ stats.open }}</h4>
-                        <p class="mb-0">Open Tickets</p>
+                        <h5 class="mb-1">{{ stats.open }}</h5>
+                        <p class="mb-0 small">Open</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-folder-open fa-2x"></i>
+                    <div>
+                        <i class="fas fa-folder-open fa-lg"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-secondary">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-secondary h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h4>{{ stats.closed }}</h4>
-                        <p class="mb-0">Closed Tickets</p>
+                        <h5 class="mb-1">{{ stats.closed }}</h5>
+                        <p class="mb-0 small">Closed</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-folder fa-2x"></i>
+                    <div>
+                        <i class="fas fa-folder fa-lg"></i>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card text-white bg-info">
-            <div class="card-body">
-                <div class="d-flex justify-content-between">
+    <div class="col-6 col-md-3">
+        <div class="card text-white bg-info h-100">
+            <div class="card-body p-3">
+                <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <h4>{{ stats.today }}</h4>
-                        <p class="mb-0">Today's Tickets</p>
+                        <h5 class="mb-1">{{ stats.today }}</h5>
+                        <p class="mb-0 small">Today</p>
                     </div>
-                    <div class="align-self-center">
-                        <i class="fas fa-calendar-day fa-2x"></i>
+                    <div>
+                        <i class="fas fa-calendar-day fa-lg"></i>
                     </div>
                 </div>
             </div>
@@ -115,7 +116,8 @@
     </div>
     <div class="card-body p-0">
         {% if tickets %}
-        <div class="table-responsive">
+        <!-- Desktop Table View -->
+        <div class="table-responsive d-none d-md-block">
             <table class="table table-hover mb-0">
                 <thead class="table-light">
                     <tr>
@@ -130,7 +132,7 @@
                 </thead>
                 <tbody>
                     {% for ticket in tickets %}
-                    <tr class="ticket-row" onclick="window.location.href='{{ url_for('ticket_detail', ticket_id=ticket.id) }}'">
+                    <tr class="ticket-row" onclick="window.location.href='{{ url_for('ticket_detail', ticket_id=ticket.id) }}';">
                         <td>
                             <strong>{{ ticket.id }}</strong>
                         </td>
@@ -179,6 +181,61 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+        
+        <!-- Mobile Card View -->
+        <div class="d-md-none">
+            {% for ticket in tickets %}
+            <div class="card mb-3 ticket-card" onclick="window.location.href='{{ url_for('ticket_detail', ticket_id=ticket.id) }}';">  
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            <h6 class="mb-1"><strong>{{ ticket.id }}</strong></h6>
+                            <span class="badge {% if ticket.status == 'open' %}bg-success{% else %}bg-secondary{% endif %} mb-2">
+                                <i class="fas {% if ticket.status == 'open' %}fa-folder-open{% else %}fa-folder{% endif %}"></i>
+                                {{ ticket.status.title() }}
+                            </span>
+                        </div>
+                        <div class="text-end">
+                            <span class="badge bg-info">{{ ticket.message_count }}</span>
+                            {% if ticket.has_voice %}
+                                <i class="fas fa-microphone text-success ms-1" title="Has voice messages"></i>
+                            {% endif %}
+                            {% if ticket.has_media %}
+                                <i class="fas fa-paperclip text-primary ms-1" title="Has media files"></i>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <strong class="text-primary">{{ ticket.sender_name }}</strong>
+                        <br>
+                        <small class="text-muted">{{ ticket.sender_id.split('@')[0] }}</small>
+                    </div>
+                    
+                    <div class="mb-2">
+                        <div class="text-truncate" style="max-width: 100%;">
+                            <small><strong>Last:</strong> {{ ticket.last_message }}</small>
+                        </div>
+                        <small class="text-muted">{{ ticket.last_message_time }}</small>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">{{ ticket.created_at_formatted }}</small>
+                        <div>
+                            <a href="{{ url_for('ticket_detail', ticket_id=ticket.id) }}" class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation()">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                            {% if ticket.status == 'open' %}
+                            <button class="btn btn-sm btn-outline-danger ms-1" onclick="event.stopPropagation(); closeTicket('{{ ticket.id }}')" title="Close Ticket">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
         </div>
         {% else %}
         <div class="text-center p-5">
