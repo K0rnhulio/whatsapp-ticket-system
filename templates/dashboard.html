@@ -5,7 +5,11 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2><i class="fas fa-tachometer-alt"></i> Ticket Dashboard</h2>
-    <div class="btn-group" role="group">
+    <div class="d-flex gap-3">
+        <a href="{{ url_for('refresh_tickets') }}" class="btn btn-outline-info">
+            <i class="fas fa-sync-alt"></i> Refresh Data
+        </a>
+        <div class="btn-group" role="group">
         <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary {% if not filter_status %}active{% endif %}">
             All Tickets
         </a>
@@ -15,8 +19,23 @@
         <a href="{{ url_for('dashboard') }}?filter=closed" class="btn btn-outline-secondary {% if filter_status == 'closed' %}active{% endif %}">
             Closed ({{ stats.closed }})
         </a>
+        </div>
     </div>
 </div>
+
+<!-- Success/Error Messages -->
+{% if refreshed %}
+<div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="fas fa-check-circle"></i> Tickets refreshed successfully from database!
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
+{% if error == 'refresh_failed' %}
+<div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="fas fa-exclamation-triangle"></i> Failed to refresh tickets from database. Please try again.
+    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+</div>
+{% endif %}
 
 <!-- Stats Cards -->
 <div class="row mb-4">

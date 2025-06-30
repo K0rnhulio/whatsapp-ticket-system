@@ -576,10 +576,23 @@ def index():
     """Redirect to dashboard."""
     return redirect(url_for('dashboard'))
 
+@app.route('/refresh_tickets')
+def refresh_tickets():
+    """Refresh tickets from database and redirect to dashboard."""
+    try:
+        load_tickets_from_db()
+        logger.info("Tickets refreshed from database successfully.")
+        return redirect(url_for('dashboard', refreshed='true'))
+    except Exception as e:
+        logger.error(f"Failed to refresh tickets: {e}")
+        return redirect(url_for('dashboard', error='refresh_failed'))
+
 @app.route('/dashboard')
 def dashboard():
     """Main dashboard showing ticket overview."""
     filter_status = request.args.get('filter')
+    refreshed = request.args.get('refreshed')
+    error = request.args.get('error')
     
     # Calculate stats
     total_tickets = len(tickets)
